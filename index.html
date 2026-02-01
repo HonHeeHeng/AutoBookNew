@@ -1,1 +1,117 @@
-<h1>AutoBook OK</h1>
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AutoBook</title>
+
+  <style>
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background:#f4f4f4;
+    }
+    header{
+      padding:12px 16px;
+      background:#fff;
+      border-bottom:1px solid #e5e5e5;
+      position:sticky;
+      top:0;
+      z-index:10;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    button{
+      padding:8px 12px;
+      border:1px solid #ddd;
+      background:#fff;
+      border-radius:8px;
+      cursor:pointer;
+    }
+    button:disabled{ opacity:.5; cursor:not-allowed; }
+
+    .wrap{
+      display:flex;
+      justify-content:center;
+      padding:18px;
+    }
+
+    /* 书本容器 */
+    #book{
+      width: min(900px, 96vw);
+      height: min(600px, 70vh);
+      box-shadow: 0 10px 30px rgba(0,0,0,.15);
+      background:#fff;
+    }
+
+    .hint{ font-size:12px; color:#666; }
+  </style>
+</head>
+
+<body>
+  <header>
+    <strong>AutoBook</strong>
+    <button id="prevBtn">⬅ 上一页</button>
+    <button id="nextBtn">下一页 ➡</button>
+    <span class="hint">提示：可用鼠标拖动翻页；手机可滑动翻页</span>
+  </header>
+
+  <div class="wrap">
+    <div id="book"></div>
+  </div>
+
+  <!-- StPageFlip (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js"></script>
+
+  <script>
+    // 1) 在这里列出你的页数（把数量改成你的总页数）
+    const totalPages = 10; // <-- 改这里：例如你有 56 页，就写 56
+
+    // 2) 生成图片路径：./assets/pages/page-001.jpg ...
+    function pad3(n){ return String(n).padStart(3, '0'); }
+    const pages = Array.from({length: totalPages}, (_, i) => {
+      const pageNo = pad3(i + 1);
+      return `./assets/pages/page-${pageNo}.jpg`;
+    });
+
+    // 3) 初始化翻页
+    const bookEl = document.getElementById('book');
+    const pageFlip = new St.PageFlip(bookEl, {
+      width: 450,        // 单页基准宽（会自适应缩放）
+      height: 600,       // 单页基准高
+      size: "stretch",   // 自适应容器
+      showCover: true,
+      maxShadowOpacity: 0.35,
+      mobileScrollSupport: true
+    });
+
+    // 加载图片页
+    pageFlip.loadFromImages(pages);
+
+    // 按钮
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    prevBtn.onclick = () => pageFlip.flipPrev();
+    nextBtn.onclick = () => pageFlip.flipNext();
+
+    // 更新按钮可用状态
+    function refreshButtons(){
+      const p = pageFlip.getCurrentPageIndex();
+      prevBtn.disabled = (p <= 0);
+      nextBtn.disabled = (p >= totalPages - 1);
+    }
+
+    pageFlip.on('flip', refreshButtons);
+    pageFlip.on('changeState', refreshButtons);
+
+    // 初始状态
+    setTimeout(refreshButtons, 300);
+
+    // 4) 如果图片没找到，会在 Console 出错；你可以用这个小检查
+    // 打开浏览器 F12 看 Console 有没有 404。
+  </script>
+</body>
+</html>
